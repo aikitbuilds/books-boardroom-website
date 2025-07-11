@@ -6,6 +6,9 @@ import ServicesPage from '@/pages/ServicesPage';
 import ResourcesPage from '@/pages/ResourcesPage';
 import ContactPage from '@/pages/ContactPage';
 import AboutPage from '@/pages/AboutPage';
+import WhoWeServePage from '@/pages/WhoWeServePage';
+import PrivacyPage from '@/pages/PrivacyPage';
+import TermsPage from '@/pages/TermsPage';
 import { CONTACT_INFO, SERVICES } from '@/lib/constants';
 
 // Individual Service Pages
@@ -229,15 +232,6 @@ const CFOPage = () => {
   );
 };
 
-const WhoWeServePage = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-primary-900 mb-4">Who We Serve</h1>
-      <p className="text-text-secondary">Coming soon...</p>
-    </div>
-  </div>
-);
-
 // Redirect component for Calendly
 const ScheduleRedirect = () => {
   React.useEffect(() => {
@@ -277,6 +271,8 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/schedule" element={<ScheduleRedirect />} />
         </Routes>
       </div>
