@@ -1,0 +1,200 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function hasPermission(permission) {
+      return isAuthenticated() && 
+        permission in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions;
+    }
+    
+    function isSuperAdmin() {
+      return hasRole('superAdmin');
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isAccountMember(accountId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountId == accountId;
+    }
+    
+    function canManageUser(targetUserId) {
+      return isAuthenticated() && (
+        isSuperAdmin() ||
+        (isAdmin() && isAccountMember(get(/databases/$(database)/documents/users/$(targetUserId)).data.accountId)) ||
+        request.auth.uid == targetUserId
+      );
+    }
+    
+    function canManageAccount(accountId) {
+      return isAuthenticated() && (
+        isSuperAdmin() ||
+        (isAdmin() && isAccountMember(accountId))
+      );
+    }
+    
+    // Users collection - users can read/write their own profile, admins can manage users in their account
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(userId) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(userId)
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isOwner(userId) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+    }
+    
+    // Accounts collection - super admins can manage all, admins can manage their own
+    match /accounts/{accountId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        isAccountMember(accountId)
+      );
+      allow create: if isAuthenticated() && isSuperAdmin();
+      allow update: if isAuthenticated() && canManageAccount(accountId);
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // User profiles collection - simplified
+    match /userProfiles/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Solar projects - users can only access their own projects, admins can access account projects
+    match /solar_projects/{projectId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Solar installations - users can only access their own installations, admins can access account installations
+    match /solar_installations/{installationId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Solar leads - users can only access their own leads, admins can access account leads
+    match /solar_leads/{leadId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // GHL connections - users can only access their own connections
+    match /ghl_connections/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // GHL contacts - users can only access their own contacts, admins can access account contacts
+    match /ghl_contacts/{contactId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // GHL opportunities - users can only access their own opportunities, admins can access account opportunities
+    match /ghl_opportunities/{opportunityId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Financial data - users can only access their own data, admins can access account data
+    match /financial_data/{dataId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Documents - users can only access their own documents, admins can access account documents
+    match /documents/{documentId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // System settings - only super admins can access
+    match /system_settings/{settingId} {
+      allow read, write: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // Analytics data - users can access their own, admins can access account data
+    match /analytics/{analyticsId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Reports - users can access their own, admins can access account reports
+    match /reports/{reportId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+    
+    // Demo data - users can manage their own, admins can manage account demo data
+    match /demo_data/{demoId} {
+      allow read, write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (resource.data.userId == request.auth.uid) ||
+        (isAdmin() && isAccountMember(resource.data.accountId))
+      );
+      allow create: if isAuthenticated();
+    }
+  }
+}

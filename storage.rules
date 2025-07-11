@@ -1,0 +1,84 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/booksboardroom.firebasestorage.app/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidContentType() {
+      return request.resource.contentType.matches('image/.*') || 
+             request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*') ||
+             request.resource.contentType.matches('application/vnd.ms-.*') ||
+             request.resource.contentType.matches('text/.*') ||
+             request.resource.contentType.matches('application/json') ||
+             request.resource.contentType.matches('text/csv') ||
+             request.resource.contentType.matches('application/zip') ||
+             request.resource.contentType.matches('application/x-zip-compressed');
+    }
+    
+    function isValidFileSize() {
+      return request.resource.size <= 50 * 1024 * 1024; // 50MB max file size
+    }
+    
+    function isValidFileName() {
+      return request.resource.name.matches('^[a-zA-Z0-9._-]+$');
+    }
+    
+    // User uploads directory - allow authenticated users to manage their own files
+    match /uploads/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // User-specific files - allow authenticated users to manage their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Financial documents - allow authenticated users to upload/manage financial files
+    match /financial/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Bank statements
+    match /bank_statements/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Tax documents
+    match /tax_documents/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Documents directory
+    match /documents/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Projects directory
+    match /projects/{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Public assets (read-only for all)
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if isAuthenticated();
+    }
+    
+    // Temporary uploads
+    match /temp/{userId}/{fileName} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+    
+    // Allow authenticated users to manage their own data in root level
+    match /{userId}/{allPaths=**} {
+      allow read, write, delete: if isAuthenticated() && isOwner(userId) && isValidContentType() && isValidFileSize() && isValidFileName();
+    }
+  }
+}

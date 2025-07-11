@@ -1,0 +1,125 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Books & Boardroom Color Variables */
+    --background: 247 247 247; /* #F7F7F7 */
+    --foreground: 51 51 51; /* #333333 */
+    --card: 255 255 255; /* #ffffff */
+    --card-foreground: 51 51 51; /* #333333 */
+    --popover: 255 255 255; /* #ffffff */
+    --popover-foreground: 51 51 51; /* #333333 */
+    --primary: 10 35 66; /* #0A2342 - Deep Navy Blue */
+    --primary-foreground: 255 255 255; /* #ffffff */
+    --secondary: 44 165 141; /* #2CA58D - Muted Teal */
+    --secondary-foreground: 255 255 255; /* #ffffff */
+    --muted: 232 232 232; /* #e8e8e8 */
+    --muted-foreground: 102 102 102; /* #666666 */
+    --accent: 184 139 74; /* #B88B4A - Soft Gold/Ochre */
+    --accent-foreground: 255 255 255; /* #ffffff */
+    --destructive: 239 68 68; /* #EF4444 */
+    --destructive-foreground: 255 255 255; /* #ffffff */
+    --border: 232 232 232; /* #e8e8e8 */
+    --input: 232 232 232; /* #e8e8e8 */
+    --ring: 10 35 66; /* #0A2342 */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 6 22 38; /* #061626 */
+    --foreground: 255 255 255; /* #ffffff */
+    --card: 36 59 83; /* #243b53 */
+    --card-foreground: 255 255 255; /* #ffffff */
+    --popover: 36 59 83; /* #243b53 */
+    --popover-foreground: 255 255 255; /* #ffffff */
+    --primary: 26 58 90; /* #1a3a5a */
+    --primary-foreground: 255 255 255; /* #ffffff */
+    --secondary: 44 165 141; /* #2CA58D */
+    --secondary-foreground: 255 255 255; /* #ffffff */
+    --muted: 51 78 104; /* #334e68 */
+    --muted-foreground: 188 204 220; /* #bcccdc */
+    --accent: 184 139 74; /* #B88B4A */
+    --accent-foreground: 255 255 255; /* #ffffff */
+    --destructive: 239 68 68; /* #EF4444 */
+    --destructive-foreground: 255 255 255; /* #ffffff */
+    --border: 51 78 104; /* #334e68 */
+    --input: 51 78 104; /* #334e68 */
+    --ring: 188 204 220; /* #bcccdc */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Books & Boardroom Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom utility classes for Books & Boardroom */
+.text-balance {
+  text-wrap: balance;
+}
+
+.prose-brand {
+  --tw-prose-body: theme('colors.text.primary');
+  --tw-prose-headings: theme('colors.primary.900');
+  --tw-prose-links: theme('colors.accent.500');
+  --tw-prose-bold: theme('colors.primary.900');
+  --tw-prose-counters: theme('colors.text.secondary');
+  --tw-prose-bullets: theme('colors.secondary.500');
+  --tw-prose-quotes: theme('colors.text.primary');
+  --tw-prose-quote-borders: theme('colors.accent.300');
+  --tw-prose-captions: theme('colors.text.secondary');
+  --tw-prose-code: theme('colors.primary.900');
+  --tw-prose-pre-code: theme('colors.primary.100');
+  --tw-prose-pre-bg: theme('colors.primary.900');
+  --tw-prose-th-borders: theme('colors.border');
+  --tw-prose-td-borders: theme('colors.border');
+}
+
+/* Smooth animations for better UX */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus styles */
+.focus-brand:focus {
+  outline: 2px solid theme('colors.accent.500');
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: theme('colors.background.main');
+}
+
+::-webkit-scrollbar-thumb {
+  background: theme('colors.text.disabled');
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.text.secondary');
+}

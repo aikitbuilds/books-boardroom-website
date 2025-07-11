@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BooksBoardroom Project Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-item:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .sidebar-item.active { background-color: rgba(59, 130, 246, 0.2); border-left: 3px solid #3B82F6; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .demo-banner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .progress-ring { transform: rotate(-90deg); }
+        .milestone-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Demo Mode Banner -->
+    <div id="demoBanner" class="demo-banner text-white p-2 text-center text-sm font-medium hidden">
+        <i data-lucide="info" class="w-4 h-4 inline mr-2"></i>
+        Demo Mode Active - Using Sample Data
+        <button onclick="toggleDemoMode()" class="ml-4 bg-white text-purple-700 px-3 py-1 rounded text-xs hover:bg-gray-100">
+            Switch to Real Data
+        </button>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg">
+            <div class="p-6 border-b">
+                <h1 class="text-xl font-bold text-gray-800">BooksBoardroom</h1>
+                <p class="text-sm text-gray-500 mt-1">Project Management Portal</p>
+            </div>
+            
+            <nav class="p-4">
+                <div class="space-y-1">
+                    <a href="#" onclick="showTab('overview')" class="sidebar-item active flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">Overview</span>
+                    </a>
+                    <a href="#" onclick="showTab('projects')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="folder" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">Projects</span>
+                    </a>
+                    <a href="#" onclick="showTab('files')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="file-text" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">File Management</span>
+                    </a>
+                    <a href="#" onclick="showTab('tasks')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="check-square" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">Tasks</span>
+                    </a>
+                    <a href="#" onclick="showTab('analytics')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="bar-chart" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">Analytics</span>
+                    </a>
+                    <a href="#" onclick="showTab('ai')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="brain" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">AI Processing</span>
+                    </a>
+                    <a href="#" onclick="showTab('settings')" class="sidebar-item flex items-center p-3 rounded-lg cursor-pointer transition-all">
+                        <i data-lucide="settings" class="w-5 h-5 mr-3 text-gray-600"></i>
+                        <span class="text-gray-700">Settings</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="absolute bottom-0 w-64 p-4 border-t">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Data Mode</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="demoToggle" class="sr-only peer" onchange="toggleDemoMode()">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-2 text-sm font-medium text-gray-700">Demo</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl font-semibold text-gray-800">Project Overview</h2>
+                        <p class="text-sm text-gray-500 mt-1">Last updated: <span id="lastUpdated"></span></p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="refreshData()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            Refresh
+                        </button>
+                        <button onclick="exportData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tab Contents -->
+            <div class="p-6">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">Total Projects</h3>
+                                <i data-lucide="folder" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800">12</p>
+                            <p class="text-sm text-green-600 mt-1">+2 this month</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">Active Tasks</h3>
+                                <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800">47</p>
+                            <p class="text-sm text-blue-600 mt-1">23 in progress</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">Files Processed</h3>
+                                <i data-lucide="file-check" class="w-5 h-5 text-purple-500"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800">156</p>
+                            <p class="text-sm text-gray-600 mt-1">89 PDFs, 67 CSVs</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-500">AI Insights</h3>
+                                <i data-lucide="brain" class="w-5 h-5 text-orange-500"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-gray-800">324</p>
+                            <p class="text-sm text-orange-600 mt-1">98% accuracy</p>
+                        </div>
+                    </div>
+
+                    <!-- Milestones -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Development Milestones</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="milestone-card bg-white rounded-lg shadow p-6 transition-all">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">In Progress</span>
+                                    <svg class="progress-ring w-16 h-16">
+                                        <circle cx="32" cy="32" r="28" stroke="#E5E7EB" stroke-width="4" fill="none"></circle>
+                                        <circle cx="32" cy="32" r="28" stroke="#3B82F6" stroke-width="4" fill="none" 
+                                                stroke-dasharray="176" stroke-dashoffset="44"></circle>
+                                    </svg>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Milestone 1: Foundation</h4>
+                                <p class="text-sm text-gray-600 mb-3">Core infrastructure with Firebase integration and file management</p>
+                                <div class="text-right">
+                                    <span class="text-2xl font-bold text-blue-600">75%</span>
+                                </div>
+                            </div>
+                            <div class="milestone-card bg-white rounded-lg shadow p-6 transition-all">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Upcoming</span>
+                                    <svg class="progress-ring w-16 h-16">
+                                        <circle cx="32" cy="32" r="28" stroke="#E5E7EB" stroke-width="4" fill="none"></circle>
+                                        <circle cx="32" cy="32" r="28" stroke="#9CA3AF" stroke-width="4" fill="none" 
+                                                stroke-dasharray="176" stroke-dashoffset="176"></circle>
+                                    </svg>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Milestone 2: Intelligence</h4>
+                                <p class="text-sm text-gray-600 mb-3">Vertex AI integration with advanced document processing</p>
+                                <div class="text-right">
+                                    <span class="text-2xl font-bold text-gray-400">0%</span>
+                                </div>
+                            </div>
+                            <div class="milestone-card bg-white rounded-lg shadow p-6 transition-all">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Planned</span>
+                                    <svg class="progress-ring w-16 h-16">
+                                        <circle cx="32" cy="32" r="28" stroke="#E5E7EB" stroke-width="4" fill="none"></circle>
+                                        <circle cx="32" cy="32" r="28" stroke="#9CA3AF" stroke-width="4" fill="none" 
+                                                stroke-dasharray="176" stroke-dashoffset="176"></circle>
+                                    </svg>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Milestone 3: Optimization</h4>
+                                <p class="text-sm text-gray-600 mb-3">Full portal with analytics and automated workflows</p>
+                                <div class="text-right">
+                                    <span class="text-2xl font-bold text-gray-400">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+                        </div>
+                        <div class="divide-y">
+                            <div class="p-4 hover:bg-gray-50">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-blue-100 rounded-full p-2">
+                                        <i data-lucide="upload" class="w-4 h-4 text-blue-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800">Financial Statement Q4 2024.pdf uploaded</p>
+                                        <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 hover:bg-gray-50">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-green-100 rounded-full p-2">
+                                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800">Task "Implement Firebase Auth" completed</p>
+                                        <p class="text-xs text-gray-500 mt-1">15 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 hover:bg-gray-50">
+                                <div class="flex items-start space-x-3">
+                                    <div class="bg-purple-100 rounded-full p-2">
+                                        <i data-lucide="brain" class="w-4 h-4 text-purple-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800">AI analysis completed for 12 documents</p>
+                                        <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Tab -->
+                <div id="projects" class="tab-content">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">Active Projects</h3>
+                            <button onclick="showNewProjectModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                New Project
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="text-left p-4 font-medium text-gray-700">Project Name</th>
+                                        <th class="text-left p-4 font-medium text-gray-700">Status</th>
+                                        <th class="text-left p-4 font-medium text-gray-700">Progress</th>
+                                        <th class="text-left p-4 font-medium text-gray-700">Team</th>
+                                        <th class="text-left p-4 font-medium text-gray-700">Due Date</th>
+                                        <th class="text-left p-4 font-medium text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Financial Dashboard</p>
+                                                <p class="text-sm text-gray-500">AI-powered analytics</p>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Active</span>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-32 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 85%"></div>
+                                                </div>
+                                                <span class="text-sm text-gray-600">85%</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex -space-x-2">
+                                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">JD</div>
+                                                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">AB</div>
+                                                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-700 text-xs font-medium">+3</div>
+                                            </div>
+                                        </td>
+                                        <td class="p-4 text-sm text-gray-600">Dec 15, 2024</td>
+                                        <td class="p-4">
+                                            <div class="flex gap-2">
+                                                <button class="text-blue-600 hover:text-blue-800">
+                                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="text-red-600 hover:text-red-800">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Management Tab -->
+                <div id="files" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                            <i data-lucide="upload-cloud" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-700 mb-2">Upload Files</h3>
+                            <p class="text-sm text-gray-500 mb-4">Drag and drop your PDF or CSV files here, or click to browse</p>
+                            <input type="file" id="fileInput" accept=".pdf,.csv" multiple class="hidden" onchange="handleFileUpload(event)">
+                            <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Select Files
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h3 class="text-lg font-semibold text-gray-800">Recent Files</h3>
+                        </div>
+                        <div class="divide-y">
+                            <div class="p-4 hover:bg-gray-50 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="file-text" class="w-10 h-10 text-red-500"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-800">Q4_Financial_Report.pdf</p>
+                                        <p class="text-sm text-gray-500">2.4 MB • Uploaded 2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i data-lucide="download" class="w-4 h-4"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Tab -->
+                <div id="tasks" class="tab-content">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">Task Management</h3>
+                            <button onclick="showNewTaskModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                New Task
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start gap-3">
+                                            <input type="checkbox" class="mt-1 rounded border-gray-300">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Implement Vertex AI integration</h4>
+                                                <p class="text-sm text-gray-500 mt-1">Configure Document AI processors for PDF extraction</p>
+                                                <div class="flex items-center gap-4 mt-2">
+                                                    <span class="text-xs text-gray-500">Due: Dec 20, 2024</span>
+                                                    <span class="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-0.5 rounded">High Priority</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="text-blue-600 hover:text-blue-800">
+                                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Processing Performance</h3>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">File Types Distribution</h3>
+                            <canvas id="fileTypesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Processing Tab -->
+                <div id="ai" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Vertex AI Processing Status</h3>
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-yellow-700">
+                                        Vertex AI integration is pending. Configure your service account and enable Document AI API to start processing.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Configure Vertex AI
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Portal Settings</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
+                                <input type="text" value="BooksBoardroom Inc." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Firebase Project ID</label>
+                                <input type="text" value="booksboardroom-portal" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">API Configuration</label>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                        <span class="text-sm text-gray-700">Firebase Authentication</span>
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">Connected</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                        <span class="text-sm text-gray-700">Vertex AI</span>
+                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">Pending</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // State management
+        let isDemoMode = false;
+        let currentTab = 'overview';
+
+        // Tab switching
+        function showTab(tabName) {
+            // Update sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            // Update page title
+            const titles = {
+                overview: 'Project Overview',
+                projects: 'Project Management',
+                files: 'File Management',
+                tasks: 'Task Management',
+                analytics: 'Analytics Dashboard',
+                ai: 'AI Processing',
+                settings: 'Portal Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[tabName];
+
+            currentTab = tabName;
+
+            // Initialize charts if analytics tab
+            if (tabName === 'analytics') {
+                initializeCharts();
+            }
+        }
+
+        // Demo mode toggle
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            document.getElementById('demoBanner').classList.toggle('hidden', !isDemoMode);
+            document.getElementById('demoToggle').checked = isDemoMode;
+            
+            // Refresh data based on mode
+            refreshData();
+        }
+
+        // Refresh data
+        function refreshData() {
+            updateLastUpdated();
+            // In real implementation, this would fetch from Firebase
+            console.log('Refreshing data in', isDemoMode ? 'demo' : 'real', 'mode');
+        }
+
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleString();
+        }
+
+        // Export data
+        function exportData() {
+            alert('Export functionality will download project data as JSON/CSV');
+        }
+
+        // File upload handling
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            console.log('Files to upload:', files);
+            // In real implementation, upload to Firebase Storage
+        }
+
+        // Show modals
+        function showNewProjectModal() {
+            alert('New project modal will be implemented with form fields');
+        }
+
+        function showNewTaskModal() {
+            alert('New task modal will be implemented with form fields');
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Performance Chart
+            const perfCtx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(perfCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Documents Processed',
+                        data: [12, 19, 15, 25, 22, 30, 28],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // File Types Chart
+            const fileCtx = document.getElementById('fileTypesChart').getContext('2d');
+            new Chart(fileCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['PDF', 'CSV', 'Excel', 'Other'],
+                    datasets: [{
+                        data: [45, 30, 20, 5],
+                        backgroundColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(156, 163, 175)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLastUpdated();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

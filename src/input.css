@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+body { 
+  font-family: 'Inter', sans-serif; 
+}
+
+.sidebar-item:hover { 
+  background-color: rgba(59, 130, 246, 0.1); 
+}
+
+.sidebar-item.active { 
+  background-color: rgba(59, 130, 246, 0.2); 
+  border-left: 3px solid #3B82F6; 
+}
+
+.tab-content { 
+  display: none; 
+}
+
+.tab-content.active { 
+  display: block; 
+}
+
+.demo-banner { 
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+}
+
+.progress-ring { 
+  transform: rotate(-90deg); 
+}
+
+.milestone-card:hover { 
+  transform: translateY(-2px); 
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+}
