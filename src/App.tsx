@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigation } from '@/components/ui/navigation';
 import BooksBoardroomHome from '@/pages/BooksBoardroomHome';
 import ServicesPage from '@/pages/ServicesPage';
+import ResourcesPage from '@/pages/ResourcesPage';
+import ContactPage from '@/pages/ContactPage';
+import AboutPage from '@/pages/AboutPage';
 import { CONTACT_INFO, SERVICES } from '@/lib/constants';
 
 // Individual Service Pages
@@ -230,33 +233,6 @@ const WhoWeServePage = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="text-center">
       <h1 className="text-4xl font-bold text-primary-900 mb-4">Who We Serve</h1>
-      <p className="text-text-secondary">Coming soon...</p>
-    </div>
-  </div>
-);
-
-const AboutPage = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-primary-900 mb-4">Our Approach</h1>
-      <p className="text-text-secondary">Coming soon...</p>
-    </div>
-  </div>
-);
-
-const ResourcesPage = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-primary-900 mb-4">Resources</h1>
-      <p className="text-text-secondary">Coming soon...</p>
-    </div>
-  </div>
-);
-
-const ContactPage = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-primary-900 mb-4">Contact Us</h1>
       <p className="text-text-secondary">Coming soon...</p>
     </div>
   </div>
